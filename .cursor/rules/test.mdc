@@ -1,0 +1,17 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+description: Guidelines for writing tests. Apply these rules when writing or reviewing code in test files to ensure consistency and quality.
+globs: 
+---
+# General Rules
+
+- Write the tests inside a testing suite of the Testify library 
+- Tests always use mocks generated with the Mockery library. They will be in the mocks/ subdirectory, in the same path of the test. If they are not present, search them in the project following the import of the interfaces, If you can't find them, notify it
+- Use the Arrange - Act - Assert pattern
+- If you need to import mocks from differente packages, always use aliases
+- Verify all mock expectations in the TearDownTest() method of the suite
+- Place the tests in the same package of the original file

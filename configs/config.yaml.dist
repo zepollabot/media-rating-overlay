@@ -1,0 +1,31 @@
+# Media services
+
+plex: # REQUIRED for the script to run
+  url: "http://your.plex.server.ip"
+  token: "your-plex-token"
+  enabled: true
+  libraries:
+  - name: "library name"
+    enabled: true
+    refresh: false
+    path: "/library/path"
+    filters:
+      added_at: last_5_months
+      titles:
+        - harry potter
+        - star wars
+      year: 2010
+    overlay:
+      type: frame # could be "frame" or "bar"
+      height: 0.08
+      transparency: 0.8
+
+
+# Rating services
+
+tmdb:
+  enabled: true
+  api_key: your-tmdb-token
+  language: it
+  region: it_IT
+

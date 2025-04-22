@@ -1,0 +1,11 @@
+services:
+  app:
+    build:
+      dockerfile: ./docker/golang/Dockerfile
+      context: .
+      target: test
+    container_name: media-rating-overlay
+    user: ${MY_UID}:${MY_GID}
+    volumes:
+      - .:/go/src/app
+      - /Multimedia:/Multimedia

@@ -1,0 +1,28 @@
+## Example of configuration
+
+#inpackage: True
+#testonly: True
+#with-expecter: True
+#keeptree: False
+
+# with-expecter: True
+# keeptree: True
+
+resolve-type-alias: false
+disable-version-string: true
+issue-845-fix: true
+with-expecter: true
+
+packages:
+  github.com/zepollabot/media-rating-overlay/internal/...:
+    config:
+      dir: "{{.InterfaceDir}}/mocks"
+      inpackage: false
+      # include:
+        # - "^.*$"
+      filename: "{{ .InterfaceName }}.go"
+      mockname: "{{ .InterfaceName }}"
+      outpkg: "{{.PackageName}}_mocks"
+      recursive: true
+      all: true
+
