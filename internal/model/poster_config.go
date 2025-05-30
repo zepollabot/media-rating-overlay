@@ -33,6 +33,11 @@ type PosterConfig struct {
 				Normal string
 			}
 		}
+		Metacritic struct {
+			Critic struct {
+				Normal string
+			}
+		}
 	}
 	VisualDebug bool
 }

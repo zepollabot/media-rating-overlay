@@ -8,6 +8,7 @@ import (
 type Config struct {
 	Plex        Plex            `yaml:"plex"`
 	TMDB        TMDB            `yaml:"tmdb"`
+	Metacritic  Metacritic      `yaml:"metacritic"`
 	Performance Performance     `yaml:"performance"`
 	HTTPClient  HTTPClient      `yaml:"http_client"`
 	Logger      Logger          `yaml:"logger"`
@@ -19,6 +20,7 @@ func DefaultConfig() *Config {
 	config := &Config{}
 	config.Plex = *DefaultPlex()
 	config.TMDB = *DefaultTMDB()
+	config.Metacritic = *DefaultMetacritic()
 	config.Performance = *DefaultPerformance()
 	config.HTTPClient = *DefaultHTTPClient()
 	config.Logger = *DefaultLogger()
@@ -33,6 +35,9 @@ func (c *Config) Validate() error {
 	}
 	if err := c.TMDB.Validate(); err != nil {
 		return fmt.Errorf("tmdb config: %w", err)
+	}
+	if err := c.Metacritic.Validate(); err != nil {
+		return fmt.Errorf("metacritic config: %w", err)
 	}
 	if err := c.Performance.Validate(); err != nil {
 		return fmt.Errorf("performance config: %w", err)
