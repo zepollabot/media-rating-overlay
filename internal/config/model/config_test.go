@@ -72,6 +72,15 @@ func (s *ConfigTestSuite) TestConfig_Validate() {
 		assert.Contains(t, err.Error(), "tmdb config: tmdb.api_key is required when tmdb is enabled")
 	})
 
+	s.T().Run("Invalid Metacritic config should fail", func(t *testing.T) {
+		cfg := DefaultConfig()
+		cfg.Metacritic.Enabled = true
+		cfg.Metacritic.APIKey = "" // Invalid state
+		err := cfg.Validate()
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "metacritic config: metacritic.api_key is required when metacritic is enabled")
+	})
+
 	s.T().Run("Invalid Performance config should fail (MaxThreads)", func(t *testing.T) {
 		cfg := DefaultConfig()
 		cfg.Performance.MaxThreads = -1 // Invalid state
