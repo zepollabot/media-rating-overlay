@@ -51,6 +51,11 @@ func (s *RottenTomatoesLogoServiceTestSuite) SetupTest() {
 			TMDB struct {
 				Audience struct{ Normal string }
 			}
+			Metacritic struct {
+				Critic struct {
+					Normal string
+				}
+			}
 		}{
 			RottenTomatoes: struct {
 				Critic struct {

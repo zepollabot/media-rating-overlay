@@ -50,6 +50,11 @@ func (s *IMDBLogoServiceTestSuite) SetupTest() {
 					Normal string
 				}
 			}
+			Metacritic struct {
+				Critic struct {
+					Normal string
+				}
+			}
 		}{
 			IMDB: struct { // Initialize IMDB
 				Audience struct {

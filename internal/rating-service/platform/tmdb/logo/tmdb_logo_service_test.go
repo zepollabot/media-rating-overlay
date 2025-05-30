@@ -50,6 +50,11 @@ func (s *TMDBLogoServiceTestSuite) SetupTest() {
 					Normal string
 				}
 			}
+			Metacritic struct {
+				Critic struct {
+					Normal string
+				}
+			}
 		}{
 			TMDB: struct { // Initialize TMDB
 				Audience struct {
