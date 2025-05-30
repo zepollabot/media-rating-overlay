@@ -7,6 +7,10 @@ import (
 	config "github.com/zepollabot/media-rating-overlay/internal/config/model"
 	"github.com/zepollabot/media-rating-overlay/internal/constant"
 	ratingModel "github.com/zepollabot/media-rating-overlay/internal/rating-service/model"
+	clientMetacritic "github.com/zepollabot/media-rating-overlay/internal/rating-service/platform/metacritic/client"
+	filterMetacritic "github.com/zepollabot/media-rating-overlay/internal/rating-service/platform/metacritic/filter"
+	metacritic "github.com/zepollabot/media-rating-overlay/internal/rating-service/platform/metacritic/search"
+	serviceMetacritic "github.com/zepollabot/media-rating-overlay/internal/rating-service/platform/metacritic/service"
 	clientTmdb "github.com/zepollabot/media-rating-overlay/internal/rating-service/platform/tmdb/client"
 	filterTmdb "github.com/zepollabot/media-rating-overlay/internal/rating-service/platform/tmdb/filter"
 	tmdb "github.com/zepollabot/media-rating-overlay/internal/rating-service/platform/tmdb/search"
@@ -74,4 +78,28 @@ func (f *RatingServiceBaseFactory) BuildIMDBComponents() (ratingModel.RatingServ
 	f.Logger.Info("IMDB rating service initialized")
 
 	return imdbService, nil
+}
+
+func (f *RatingServiceBaseFactory) BuildMetacriticComponents() (ratingModel.RatingService, error) {
+	f.Logger.Info("Building Metacritic rating service")
+
+	metacriticService := ratingModel.RatingService{
+		Name: constant.RatingServiceMetacritic,
+	}
+
+	if f.Config.Metacritic.Enabled {
+		ratingClient, err := clientMetacritic.NewMetacriticClient(&f.Config.Metacritic, &f.Config.HTTPClient, f.Config.Logger.LogFilePath, f.Logger)
+		if err != nil {
+			f.Logger.Error("error creating Metacritic client", zap.Error(err))
+			return ratingModel.RatingService{}, err
+		}
+		filtersService := filterMetacritic.NewMetacriticFilterService(f.Logger)
+		searchService := metacritic.NewMetacriticSearchService(ratingClient, filtersService, f.Logger)
+		ratingPlatformService := serviceMetacritic.NewMetacriticRatingPlatformService(f.Logger, searchService)
+
+		f.Logger.Info("Metacritic rating service initialized")
+		metacriticService.PlatformService = ratingPlatformService
+	}
+
+	return metacriticService, nil
 }

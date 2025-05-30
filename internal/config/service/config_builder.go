@@ -28,6 +28,9 @@ func (b *ConfigBuilder) WithDefaults() *ConfigBuilder {
 		Language: "en-US",
 		Region:   "US",
 	}
+	b.config.Metacritic = config.Metacritic{
+		Enabled: false,
+	}
 	b.config.Performance = *config.DefaultPerformance()
 	b.config.HTTPClient = *config.DefaultHTTPClient()
 	b.config.Logger = *config.DefaultLogger()
@@ -44,6 +47,12 @@ func (b *ConfigBuilder) WithPlex(plex config.Plex) *ConfigBuilder {
 // WithTMDB sets TMDB configuration
 func (b *ConfigBuilder) WithTMDB(tmdb config.TMDB) *ConfigBuilder {
 	b.config.TMDB = tmdb
+	return b
+}
+
+// WithMetacritic sets Metacritic configuration
+func (b *ConfigBuilder) WithMetacritic(metacritic config.Metacritic) *ConfigBuilder {
+	b.config.Metacritic = metacritic
 	return b
 }
 
@@ -93,6 +102,12 @@ func (b *ConfigBuilder) validate() error {
 	if b.config.TMDB.Enabled {
 		if b.config.TMDB.ApiKey == "" {
 			return fmt.Errorf("tmdb.api_key is required when tmdb is enabled")
+		}
+	}
+
+	if b.config.Metacritic.Enabled {
+		if b.config.Metacritic.APIKey == "" {
+			return fmt.Errorf("metacritic.api_key is required when metacritic is enabled")
 		}
 	}
 

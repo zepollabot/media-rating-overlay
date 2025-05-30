@@ -41,6 +41,10 @@ func (s *ServiceInitializerSuite) SetupTest() {
 			Enabled: true,
 			ApiKey:  "dummy-tmdb-apikey",
 		},
+		Metacritic: configmodel.Metacritic{
+			Enabled: true,
+			APIKey:  "dummy-metacritic-apikey",
+		},
 		Performance: configmodel.Performance{
 			LibraryProcessingTimeout: 10,
 		},
@@ -101,7 +105,7 @@ func (s *ServiceInitializerSuite) TestInitializeServices_Success() {
 	assert.Equal(s.T(), mediaModel.MediaServicePlex, s.initializer.GetMediaServices()[0].Name)
 
 	assert.NotNil(s.T(), s.initializer.GetRatingPlatformServices())
-	assert.Len(s.T(), s.initializer.GetRatingPlatformServices(), 3)
+	assert.Len(s.T(), s.initializer.GetRatingPlatformServices(), 4)
 
 	ratingServicesNames := make([]string, 0, len(s.initializer.GetRatingPlatformServices()))
 	for _, rs := range s.initializer.GetRatingPlatformServices() {
@@ -139,7 +143,7 @@ func (s *ServiceInitializerSuite) TestGetRatingPlatformServices_AfterInitializat
 	s.Require().NoError(err)
 	services := s.initializer.GetRatingPlatformServices()
 	assert.NotEmpty(s.T(), services)
-	assert.Len(s.T(), services, 3)
+	assert.Len(s.T(), services, 4)
 }
 
 func (s *ServiceInitializerSuite) TestGetLibraryProcessor_BeforeInitialization() {
@@ -178,7 +182,7 @@ func (s *ServiceInitializerSuite) TestInitializeServices_PlexDisabled() {
 
 	// Rating services and processors should still be initialized
 	assert.NotNil(s.T(), s.initializer.GetRatingPlatformServices())
-	assert.Len(s.T(), s.initializer.GetRatingPlatformServices(), 3)
+	assert.Len(s.T(), s.initializer.GetRatingPlatformServices(), 4)
 	assert.NotNil(s.T(), s.initializer.GetLibraryProcessor())
 	assert.NotNil(s.T(), s.initializer.GetItemProcessor())
 }
@@ -279,5 +283,39 @@ func (s *ServiceInitializerSuite) TestInitializeServices_RatingServiceConfigErro
 	assert.Error(s.T(), err, "Expected an error due to missing TMDB API key")
 	s.T().Logf("Received error from TMDBApiKeyMissing test: %v", err)
 	assert.Contains(s.T(), err.Error(), "tmdb.api_key is required", "Error message should indicate TMDB API key is required")
-	assert.Empty(s.T(), initializer.GetRatingPlatformServices(), "Rating platform services should be empty or only contain services initialized before the error")
+	services := initializer.GetRatingPlatformServices()
+	for _, service := range services {
+		assert.NotEqual(s.T(), constant.RatingServiceTMDB, service.Name, "TMDB service should not be present")
+	}
+}
+
+func (s *ServiceInitializerSuite) TestInitializeServices_RatingServiceConfigError_MetacriticApiKeyMissing() {
+	// Arrange
+	invalidConfig := &configmodel.Config{
+		Plex: configmodel.Plex{
+			Enabled: true, Url: "http://dummy", Token: "dummy",
+		},
+		Metacritic: configmodel.Metacritic{
+			Enabled: true,
+			APIKey:  "",
+		},
+		Performance: configmodel.Performance{LibraryProcessingTimeout: 10 * time.Second},
+		HTTPClient:  configmodel.HTTPClient{Timeout: 5 * time.Second},
+		Logger:      configmodel.Logger{LogFilePath: "test.log", UseStdout: true, LogLevel: "info"},
+		Processor:   configmodel.ProcessorConfig{ItemProcessor: configmodel.ItemProcessorConfig{RatingBuilder: configmodel.RatingBuilderConfig{Timeout: 1 * time.Second}}, LibraryProcessor: configmodel.LibraryProcessorConfig{DefaultTimeout: 1 * time.Second}},
+	}
+
+	initializer := NewServiceInitializer(s.logger, invalidConfig, s.ctx, s.workSemaphore)
+
+	// Act
+	err := initializer.InitializeServices()
+
+	// Assert
+	assert.Error(s.T(), err, "Expected an error due to missing Metacritic API key")
+	s.T().Logf("Received error from MetacriticApiKeyMissing test: %v", err)
+	assert.Contains(s.T(), err.Error(), "metacritic.api_key is required", "Error message should indicate Metacritic API key is required")
+	services := initializer.GetRatingPlatformServices()
+	for _, service := range services {
+		assert.NotEqual(s.T(), constant.RatingServiceMetacritic, service.Name, "Metacritic service should not be present")
+	}
 }

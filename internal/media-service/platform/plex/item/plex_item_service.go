@@ -81,17 +81,18 @@ func (s *PlexItemService) convertPlexItems(items []plex.Entry) []model.Item {
 	lo.ForEach(items, func(entry plex.Entry, index int) {
 
 		convertedItems = append(convertedItems, model.Item{
-			ID:         entry.ID,
-			GUID:       entry.GUID,
-			Title:      entry.Title,
-			Type:       entry.Type,
-			Year:       entry.Year,
-			Ratings:    s.buildRatings(entry),
-			AddedAt:    media.ConvertoTimestampToUTC(entry.AddedAt),
-			UpdatedAt:  media.ConvertoTimestampToUTC(entry.UpdatedAt),
-			Poster:     entry.Poster,
-			Media:      s.convertPlexMedia(entry.Media),
-			IsEligible: s.isEligibleForPoster(entry.Type, entry.GUID),
+			ID:            entry.ID,
+			GUID:          entry.GUID,
+			Title:         entry.Title,
+			OriginalTitle: entry.OriginalTitle,
+			Type:          entry.Type,
+			Year:          entry.Year,
+			Ratings:       s.buildRatings(entry),
+			AddedAt:       media.ConvertoTimestampToUTC(entry.AddedAt),
+			UpdatedAt:     media.ConvertoTimestampToUTC(entry.UpdatedAt),
+			Poster:        entry.Poster,
+			Media:         s.convertPlexMedia(entry.Media),
+			IsEligible:    s.isEligibleForPoster(entry.Type, entry.GUID),
 		})
 	})
 	return convertedItems

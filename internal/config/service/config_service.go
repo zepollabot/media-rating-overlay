@@ -104,7 +104,7 @@ func (c *ConfigService) mergeConfigs(base, env *models.Config) (*models.Config, 
 	// Override with environment-specific values if they exist and are non-empty/non-zero
 
 	// Plex
-	if env.Plex.Enabled { // Gate: Is the Plex config in 'env' to be considered?
+	if env.Plex.Enabled {
 		merged.Plex.Enabled = true // If env.Plex is enabled, the merged Plex is enabled
 		if env.Plex.Url != "" {
 			merged.Plex.Url = env.Plex.Url
@@ -115,10 +115,18 @@ func (c *ConfigService) mergeConfigs(base, env *models.Config) (*models.Config, 
 	}
 
 	// TMDB
-	if env.TMDB.Enabled { // Gate
+	if env.TMDB.Enabled {
 		merged.TMDB.Enabled = true
 		if env.TMDB.ApiKey != "" {
 			merged.TMDB.ApiKey = env.TMDB.ApiKey
+		}
+	}
+
+	// Metacritic
+	if env.Metacritic.Enabled {
+		merged.Metacritic.Enabled = true
+		if env.Metacritic.APIKey != "" {
+			merged.Metacritic.APIKey = env.Metacritic.APIKey
 		}
 	}
 
@@ -133,7 +141,7 @@ func (c *ConfigService) mergeConfigs(base, env *models.Config) (*models.Config, 
 	}
 
 	// HTTPClient
-	if env.HTTPClient.Timeout > 0 { // Gate
+	if env.HTTPClient.Timeout > 0 {
 		merged.HTTPClient.Timeout = env.HTTPClient.Timeout
 	}
 
@@ -148,7 +156,7 @@ func (c *ConfigService) mergeConfigs(base, env *models.Config) (*models.Config, 
 	}
 
 	// Processor
-	// Using a more general gate for Processor: if any of its configurable parts have non-zero values from env.
+	// Using a more general check for Processor: if any of its configurable parts have non-zero values from env.
 	if (env.Processor.ItemProcessor.RatingBuilder.Timeout != 0) ||
 		(env.Processor.LibraryProcessor.DefaultTimeout != 0) {
 
@@ -191,6 +199,9 @@ func (c *ConfigService) loadFromFile(path string) (*models.Config, error) {
 	}
 	if config.TMDB.Enabled {
 		builder.WithTMDB(config.TMDB)
+	}
+	if config.Metacritic.Enabled {
+		builder.WithMetacritic(config.Metacritic)
 	}
 	if config.Performance.MaxThreads != 0 {
 		builder.WithPerformance(config.Performance)

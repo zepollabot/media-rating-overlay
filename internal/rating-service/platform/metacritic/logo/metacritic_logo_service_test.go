@@ -1,32 +1,32 @@
-package imdb
+package metacritic
 
 import (
 	"context"
 	"errors"
+	"strconv"
 	"testing"
 
-	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/zap"
 
 	"github.com/zepollabot/media-rating-overlay/internal/model"
-	mocks "github.com/zepollabot/media-rating-overlay/internal/rating-service/platform/imdb/logo/mocks"
+	mocks "github.com/zepollabot/media-rating-overlay/internal/rating-service/platform/metacritic/logo/mocks"
 )
 
-type IMDBLogoServiceTestSuite struct {
+type MetacriticLogoServiceTestSuite struct {
 	suite.Suite
 	mockLogoCreator *mocks.LogoCreator
 	logger          *zap.Logger
 	config          *model.PosterConfig
 	testConfigPath  string
-	service         *IMDBLogoService
+	service         *MetacriticLogoService
 }
 
-func (s *IMDBLogoServiceTestSuite) SetupTest() {
+func (s *MetacriticLogoServiceTestSuite) SetupTest() {
 	s.mockLogoCreator = new(mocks.LogoCreator)
 	s.logger = zap.NewNop() // Use Noop logger for tests
 
-	s.testConfigPath = "path/to/imdb/audience/normal.png"
+	s.testConfigPath = "path/to/metacritic/critic/normal.png"
 
 	s.config = &model.PosterConfig{
 		ImagePaths: struct { // Anonymous struct for ImagePaths
@@ -56,12 +56,12 @@ func (s *IMDBLogoServiceTestSuite) SetupTest() {
 				}
 			}
 		}{
-			IMDB: struct { // Initialize IMDB
-				Audience struct {
+			Metacritic: struct { // Initialize
+				Critic struct {
 					Normal string
 				}
 			}{
-				Audience: struct { // Initialize Audience
+				Critic: struct { // Initialize Critic
 					Normal string
 				}{
 					Normal: s.testConfigPath,
@@ -72,25 +72,25 @@ func (s *IMDBLogoServiceTestSuite) SetupTest() {
 		},
 	}
 
-	s.service = NewIMDBLogoService(s.logger, s.config, s.mockLogoCreator)
+	s.service = NewMetacriticLogoService(s.logger, s.config, s.mockLogoCreator)
 }
 
-func (s *IMDBLogoServiceTestSuite) TearDownTest() {
+func (s *MetacriticLogoServiceTestSuite) TearDownTest() {
 	s.mockLogoCreator.AssertExpectations(s.T())
 }
 
-func TestIMDBLogoServiceTestSuite(t *testing.T) {
-	suite.Run(t, new(IMDBLogoServiceTestSuite))
+func TestMetacriticLogoServiceTestSuite(t *testing.T) {
+	suite.Run(t, new(MetacriticLogoServiceTestSuite))
 }
 
-func (s *IMDBLogoServiceTestSuite) TestNewIMDBLogoService() {
+func (s *MetacriticLogoServiceTestSuite) TestNewMetacriticLogoService() {
 	// Arrange
 	logger := zap.NewNop()
 	config := &model.PosterConfig{}
 	mockLogoCreator := new(mocks.LogoCreator)
 
 	// Act
-	service := NewIMDBLogoService(logger, config, mockLogoCreator)
+	service := NewMetacriticLogoService(logger, config, mockLogoCreator)
 
 	// Assert
 	s.NotNil(service)
@@ -99,15 +99,15 @@ func (s *IMDBLogoServiceTestSuite) TestNewIMDBLogoService() {
 	s.Equal(mockLogoCreator, service.logoCreator)
 }
 
-func (s *IMDBLogoServiceTestSuite) TestGetLogos_Success_SingleRating() {
+func (s *MetacriticLogoServiceTestSuite) TestGetLogos_Success_SingleRating() {
 	// Arrange
 	ctx := context.Background()
 	ratings := []model.Rating{
-		{Rating: 7.8},
+		{Rating: 78},
 	}
 	itemID := "tt1234567"
 	dimensions := model.LogoDimensions{}
-	expectedRatingStr := decimal.NewFromFloat32(7.8).Round(1).StringFixedBank(1)
+	expectedRatingStr := strconv.Itoa(int(78))
 	expectedLogo := &model.Logo{}
 
 	s.mockLogoCreator.On("CreateLogo", s.testConfigPath, expectedRatingStr, dimensions).Return(expectedLogo, nil).Once()
@@ -122,21 +122,21 @@ func (s *IMDBLogoServiceTestSuite) TestGetLogos_Success_SingleRating() {
 	s.Equal(expectedLogo, logos[0])
 }
 
-func (s *IMDBLogoServiceTestSuite) TestGetLogos_Success_MultipleRatings() {
+func (s *MetacriticLogoServiceTestSuite) TestGetLogos_Success_MultipleRatings() {
 	// Arrange
 	ctx := context.Background()
 	ratings := []model.Rating{
-		{Rating: 7.8},
-		{Rating: 8.2},
+		{Rating: 78},
+		{Rating: 82},
 	}
 	itemID := "tt1234567"
 	dimensions := model.LogoDimensions{}
 
-	expectedRatingStr1 := decimal.NewFromFloat32(7.8).Round(1).StringFixedBank(1)
+	expectedRatingStr1 := strconv.Itoa(int(78))
 	expectedLogo1 := &model.Logo{}
 	s.mockLogoCreator.On("CreateLogo", s.testConfigPath, expectedRatingStr1, dimensions).Return(expectedLogo1, nil).Once()
 
-	expectedRatingStr2 := decimal.NewFromFloat32(8.2).Round(1).StringFixedBank(1)
+	expectedRatingStr2 := strconv.Itoa(int(82))
 	expectedLogo2 := &model.Logo{}
 	s.mockLogoCreator.On("CreateLogo", s.testConfigPath, expectedRatingStr2, dimensions).Return(expectedLogo2, nil).Once()
 
@@ -151,7 +151,7 @@ func (s *IMDBLogoServiceTestSuite) TestGetLogos_Success_MultipleRatings() {
 	s.Contains(logos, expectedLogo2)
 }
 
-func (s *IMDBLogoServiceTestSuite) TestGetLogos_NoRatings() {
+func (s *MetacriticLogoServiceTestSuite) TestGetLogos_NoRatings() {
 	// Arrange
 	ctx := context.Background()
 	var ratings []model.Rating
@@ -167,11 +167,11 @@ func (s *IMDBLogoServiceTestSuite) TestGetLogos_NoRatings() {
 	s.Len(logos, 0)
 }
 
-func (s *IMDBLogoServiceTestSuite) TestGetLogos_RatingIsZero() {
+func (s *MetacriticLogoServiceTestSuite) TestGetLogos_RatingIsZero() {
 	// Arrange
 	ctx := context.Background()
 	ratings := []model.Rating{
-		{Rating: 0.0},
+		{Rating: 0},
 	}
 	itemID := "tt1234567"
 	dimensions := model.LogoDimensions{}
@@ -185,15 +185,15 @@ func (s *IMDBLogoServiceTestSuite) TestGetLogos_RatingIsZero() {
 	s.Len(logos, 0)
 }
 
-func (s *IMDBLogoServiceTestSuite) TestGetLogos_CreateLogoError() {
+func (s *MetacriticLogoServiceTestSuite) TestGetLogos_CreateLogoError() {
 	// Arrange
 	ctx := context.Background()
 	ratings := []model.Rating{
-		{Rating: 7.8},
+		{Rating: 78},
 	}
 	itemID := "tt1234567"
 	dimensions := model.LogoDimensions{}
-	expectedRatingStr := decimal.NewFromFloat32(7.8).Round(1).StringFixedBank(1)
+	expectedRatingStr := strconv.Itoa(int(78))
 	expectedError := errors.New("failed to create logo")
 
 	s.mockLogoCreator.On("CreateLogo", s.testConfigPath, expectedRatingStr, dimensions).Return(nil, expectedError).Once()
@@ -207,22 +207,22 @@ func (s *IMDBLogoServiceTestSuite) TestGetLogos_CreateLogoError() {
 	s.Nil(logos)
 }
 
-func (s *IMDBLogoServiceTestSuite) TestGetLogos_Success_MultipleRatings_OneZero() {
+func (s *MetacriticLogoServiceTestSuite) TestGetLogos_Success_MultipleRatings_OneZero() {
 	// Arrange
 	ctx := context.Background()
 	ratings := []model.Rating{
-		{Rating: 7.8},
-		{Rating: 0.0},
-		{Rating: 8.2},
+		{Rating: 78},
+		{Rating: 0},
+		{Rating: 82},
 	}
 	itemID := "tt1234567"
 	dimensions := model.LogoDimensions{}
 
-	expectedRatingStr1 := decimal.NewFromFloat32(7.8).Round(1).StringFixedBank(1)
+	expectedRatingStr1 := strconv.Itoa(int(78))
 	expectedLogo1 := &model.Logo{}
 	s.mockLogoCreator.On("CreateLogo", s.testConfigPath, expectedRatingStr1, dimensions).Return(expectedLogo1, nil).Once()
 
-	expectedRatingStr2 := decimal.NewFromFloat32(8.2).Round(1).StringFixedBank(1)
+	expectedRatingStr2 := strconv.Itoa(int(82))
 	expectedLogo2 := &model.Logo{}
 	s.mockLogoCreator.On("CreateLogo", s.testConfigPath, expectedRatingStr2, dimensions).Return(expectedLogo2, nil).Once()
 
@@ -237,44 +237,15 @@ func (s *IMDBLogoServiceTestSuite) TestGetLogos_Success_MultipleRatings_OneZero(
 	s.Contains(logos, expectedLogo2)
 }
 
-func (s *IMDBLogoServiceTestSuite) TestGetLogos_Success_RatingRounded() {
-	// Arrange
-	ctx := context.Background()
-	ratings := []model.Rating{
-		{Rating: 7.85}, // Will be rounded to 7.9
-		{Rating: 7.84}, // Will be rounded to 7.8
-	}
-	itemID := "tt1234567"
-	dimensions := model.LogoDimensions{}
-
-	expectedRatingStr1 := "7.9"
-	expectedLogo1 := &model.Logo{}
-	s.mockLogoCreator.On("CreateLogo", s.testConfigPath, expectedRatingStr1, dimensions).Return(expectedLogo1, nil).Once()
-
-	expectedRatingStr2 := "7.8"
-	expectedLogo2 := &model.Logo{}
-	s.mockLogoCreator.On("CreateLogo", s.testConfigPath, expectedRatingStr2, dimensions).Return(expectedLogo2, nil).Once()
-
-	// Act
-	logos, err := s.service.GetLogos(ctx, ratings, itemID, dimensions)
-
-	// Assert
-	s.NoError(err)
-	s.NotNil(logos)
-	s.Len(logos, 2)
-	s.Contains(logos, expectedLogo1)
-	s.Contains(logos, expectedLogo2)
-}
-
-func (s *IMDBLogoServiceTestSuite) TestGetLogos_ContextCancelled() {
+func (s *MetacriticLogoServiceTestSuite) TestGetLogos_ContextCancelled() {
 	// Arrange
 	ctx, cancel := context.WithCancel(context.Background())
 	ratings := []model.Rating{
-		{Rating: 7.8},
+		{Rating: 78},
 	}
 	itemID := "tt1234567"
 	dimensions := model.LogoDimensions{}
-	expectedRatingStr := decimal.NewFromFloat32(7.8).Round(1).StringFixedBank(1)
+	expectedRatingStr := strconv.Itoa(int(78))
 
 	cancel()
 

@@ -95,6 +95,22 @@ func (s *RatingPlatformServiceModelFactorySuite) TestCreate_IMDBSuccess() {
 	s.NotNil(ratingService.LogoService, "LogoService should be initialized for IMDB")
 }
 
+func (s *RatingPlatformServiceModelFactorySuite) TestCreate_MetacriticSuccess() {
+	// Arrange
+	baseMetacriticService := rating_service_model.RatingService{Name: constant.RatingServiceMetacritic}
+	s.mockBaseFactory.On("BuildMetacriticComponents").Return(baseMetacriticService, nil).Once()
+
+	// Act
+	ratingService, err := s.factory.Create(constant.RatingServiceMetacritic)
+
+	// Assert
+	s.NoError(err)
+	s.NotNil(ratingService, "RatingService should not be nil")
+	s.Equal(constant.RatingServiceMetacritic, ratingService.Name, "Service name should be Metacritic")
+	// Verify that the factory has indeed assigned the LogoService to the service returned by the base factory.
+	s.NotNil(ratingService.LogoService, "LogoService should be initialized for Metacritic")
+}
+
 // TestCreate_TMDBBuildError verifies error handling when TMDB component building fails.
 func (s *RatingPlatformServiceModelFactorySuite) TestCreate_TMDBBuildError() {
 	// Arrange
@@ -134,6 +150,21 @@ func (s *RatingPlatformServiceModelFactorySuite) TestCreate_IMDBBuildError() {
 
 	// Act
 	ratingService, err := s.factory.Create(constant.RatingServiceIMDB)
+
+	// Assert
+	s.Error(err)
+	s.Equal(expectedErr, err)
+	s.Equal(rating_service_model.RatingService{}, ratingService, "RatingService should be zero value on error")
+}
+
+func (s *RatingPlatformServiceModelFactorySuite) TestCreate_MetacriticBuildError() {
+	// Arrange
+	expectedErr := errors.New("metacritic build error")
+	// Return an empty RatingService struct on error, as per typical Go error handling.
+	s.mockBaseFactory.On("BuildMetacriticComponents").Return(rating_service_model.RatingService{}, expectedErr).Once()
+
+	// Act
+	ratingService, err := s.factory.Create(constant.RatingServiceMetacritic)
 
 	// Assert
 	s.Error(err)

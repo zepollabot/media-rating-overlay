@@ -176,6 +176,18 @@ func (si *ServiceInitializer) buildRatingPlatformServicesArray() error {
 		zap.Strings("ratingPlatformServices", lo.Map(si.ratingPlatformServices, func(rs ratingModel.RatingService, _ int) string { return rs.Name })),
 	)
 
+	// Initialize Metacritic rating service
+	si.logger.Debug("Initializing Metacritic rating platform service")
+
+	metacriticRatingService, err := ratingPlatformServiceModelFactory.Create(constant.RatingServiceMetacritic)
+	if err != nil {
+		si.logger.Error("error creating rating service", zap.Error(err))
+		return err
+	}
+
+	si.logger.Debug("Metacritic rating platform service configured", zap.Any("ratingService", metacriticRatingService))
+	si.ratingPlatformServices = append(si.ratingPlatformServices, metacriticRatingService)
+
 	return nil
 }
 

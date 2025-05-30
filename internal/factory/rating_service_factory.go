@@ -12,6 +12,7 @@ import (
 
 	ratingModel "github.com/zepollabot/media-rating-overlay/internal/rating-service/model"
 	logoIMDB "github.com/zepollabot/media-rating-overlay/internal/rating-service/platform/imdb/logo"
+	logoMetacritic "github.com/zepollabot/media-rating-overlay/internal/rating-service/platform/metacritic/logo"
 	logoRottenTomatoes "github.com/zepollabot/media-rating-overlay/internal/rating-service/platform/rotten-tomatoes/logo"
 	logoTmdb "github.com/zepollabot/media-rating-overlay/internal/rating-service/platform/tmdb/logo"
 )
@@ -21,6 +22,7 @@ type RatingServiceBaseFactory interface {
 	BuildTMDBComponents() (ratingModel.RatingService, error)
 	BuildRottenTomatoesComponents() (ratingModel.RatingService, error)
 	BuildIMDBComponents() (ratingModel.RatingService, error)
+	BuildMetacriticComponents() (ratingModel.RatingService, error)
 }
 
 type RatingPlatformServiceModelFactory struct {
@@ -52,6 +54,8 @@ func (f *RatingPlatformServiceModelFactory) Create(serviceName string) (ratingMo
 		return f.buildRottenTomatoesRatingService(logoCreator, defaultPosterConfig)
 	case constant.RatingServiceIMDB:
 		return f.buildIMDBRatingService(logoCreator, defaultPosterConfig)
+	case constant.RatingServiceMetacritic:
+		return f.buildMetacriticRatingService(logoCreator, defaultPosterConfig)
 	default:
 		return ratingModel.RatingService{}, fmt.Errorf("unsupported rating service: %s", serviceName)
 	}
@@ -97,4 +101,18 @@ func (f *RatingPlatformServiceModelFactory) buildIMDBRatingService(logoCreator *
 	imdbService.LogoService = logoService
 
 	return imdbService, nil
+}
+
+func (f *RatingPlatformServiceModelFactory) buildMetacriticRatingService(logoCreator *logo.LogoCreator, defaultPosterConfig *model.PosterConfig) (ratingModel.RatingService, error) {
+	// Get base components
+	metacriticService, err := f.baseFactory.BuildMetacriticComponents()
+	if err != nil {
+		return ratingModel.RatingService{}, err
+	}
+
+	// Add logo service
+	logoService := logoMetacritic.NewMetacriticLogoService(f.logger, defaultPosterConfig, logoCreator)
+	metacriticService.LogoService = logoService
+
+	return metacriticService, nil
 }

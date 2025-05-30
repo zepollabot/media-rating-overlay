@@ -1,4 +1,4 @@
-package tmdb
+package metacritic
 
 import (
 	"context"
@@ -10,26 +10,26 @@ import (
 	rating "github.com/zepollabot/media-rating-overlay/internal/rating-service"
 )
 
-type TMDBRatingPlatformService struct {
+type MetacriticRatingPlatformService struct {
 	logger        *zap.Logger
 	searchService rating.SearchService
 }
 
-func NewTMDBRatingPlatformService(logger *zap.Logger, searchService rating.SearchService) *TMDBRatingPlatformService {
-	return &TMDBRatingPlatformService{
+func NewMetacriticRatingPlatformService(logger *zap.Logger, searchService rating.SearchService) *MetacriticRatingPlatformService {
+	return &MetacriticRatingPlatformService{
 		logger:        logger,
 		searchService: searchService,
 	}
 }
 
-func (s *TMDBRatingPlatformService) GetRating(ctx context.Context, item model.Item) (model.Rating, error) {
-	s.logger.Debug("Retrieving TMDB rating..",
+func (s *MetacriticRatingPlatformService) GetRating(ctx context.Context, item model.Item) (model.Rating, error) {
+	s.logger.Debug("Retrieving Metacritic rating..",
 		zap.String("Item ID", item.ID),
 	)
 	results, err := s.searchService.GetResults(ctx, item)
 	if err != nil {
 		if err.Error() != model.NotFound {
-			s.logger.Error("unable to get TMDB results",
+			s.logger.Error("unable to get Metacritic results",
 				zap.String("Item ID", item.ID),
 				zap.String("Item Title", item.Title),
 				zap.String("Item Original Title", item.OriginalTitle),
@@ -41,9 +41,9 @@ func (s *TMDBRatingPlatformService) GetRating(ctx context.Context, item model.It
 
 	if len(results) == 0 {
 		s.logger.Debug("no results found",
-			zap.String("Item ID", item.ID),
 			zap.String("Item Title", item.Title),
 			zap.String("Item Original Title", item.OriginalTitle),
+			zap.String("Item ID", item.ID),
 		)
 		return model.Rating{}, nil
 	} else {
@@ -57,14 +57,14 @@ func (s *TMDBRatingPlatformService) GetRating(ctx context.Context, item model.It
 		// even if there are multiple results, we take the first one as the best one
 		result := results[0]
 		if result.Vote > 0 {
-			s.logger.Debug("TMDB rating found",
+			s.logger.Debug("Metacritic rating found",
 				zap.String("Item ID", item.ID),
 				zap.Float32("Rating", float32(result.Vote)),
 			)
 			return model.Rating{
-				Name:   constant.RatingServiceTMDB,
+				Name:   constant.RatingServiceMetacritic,
 				Rating: float32(result.Vote),
-				Type:   model.RatingServiceTypeAudience,
+				Type:   model.RatingServiceTypeCritic,
 			}, nil
 		}
 	}

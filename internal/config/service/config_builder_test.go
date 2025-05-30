@@ -257,6 +257,19 @@ func (s *ConfigBuilderTestSuite) TestBuild_TMDBEnabledNoApiKey() {
 	s.Contains(err.Error(), "tmdb.api_key is required when tmdb is enabled", "Error message mismatch")
 }
 
+func (s *ConfigBuilderTestSuite) TestBuild_MetacriticEnabledNoApiKey() {
+	// Arrange
+	s.builder.WithDefaults().WithMetacritic(configModel.Metacritic{Enabled: true})
+
+	// Act
+	cfg, err := s.builder.Build()
+
+	// Assert
+	s.Error(err, "Build() should return an error for Metacritic enabled with no API key")
+	s.Nil(cfg, "Config should be nil on validation error")
+	s.Contains(err.Error(), "metacritic.api_key is required when metacritic is enabled", "Error message mismatch")
+}
+
 func (s *ConfigBuilderTestSuite) TestBuild_InvalidPerformanceMaxThreads() {
 	// Arrange
 	s.builder.WithDefaults().WithPerformance(configModel.Performance{MaxThreads: -1, LibraryProcessingTimeout: 10 * time.Second})

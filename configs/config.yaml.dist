@@ -29,3 +29,6 @@ tmdb:
   language: it
   region: it_IT
 
+metacritic:
+  enabled: true
+  api_key: your-metacritic-token
