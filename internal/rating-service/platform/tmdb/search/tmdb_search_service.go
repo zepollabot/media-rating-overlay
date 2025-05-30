@@ -37,7 +37,7 @@ func (s *TMDBSearchService) GetResults(ctx context.Context, item model.Item) ([]
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint.String(), nil)
 	if err != nil {
 		s.logger.Error("unable to build request",
-			zap.String("method", "GetEntries"),
+			zap.String("method", "GetResults"),
 			zap.String("url", endpoint.String()),
 			zap.Error(err),
 		)
@@ -61,7 +61,7 @@ func (s *TMDBSearchService) GetResults(ctx context.Context, item model.Item) ([]
 
 	if err != nil {
 		s.logger.Error("unable to perform request to TMDB Client",
-			zap.String("method", "GetEntries"),
+			zap.String("method", "GetResults"),
 			zap.Error(err),
 		)
 		return searchResults, err
@@ -70,7 +70,7 @@ func (s *TMDBSearchService) GetResults(ctx context.Context, item model.Item) ([]
 	results, ok := response.(*tmdb.Response)
 	if !ok {
 		s.logger.Error("unable to cast response to TMDB Response",
-			zap.String("method", "GetEntries"),
+			zap.String("method", "GetResults"),
 		)
 		return nil, fmt.Errorf("invalid response type")
 	}
