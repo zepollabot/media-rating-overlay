@@ -57,6 +57,7 @@ func PosterConfigWithDefaultValues() *PosterConfig {
 	config.ImagePaths.RottenTomatoes.Audience.Low = filepath.Join("internal", "processor", "image", "data", "RT_audience_low.png")
 	config.ImagePaths.IMDB.Audience.Normal = filepath.Join("internal", "processor", "image", "data", "IMDb.png")
 	config.ImagePaths.TMDB.Audience.Normal = filepath.Join("internal", "processor", "image", "data", "TMDB.png")
+	config.ImagePaths.Metacritic.Critic.Normal = filepath.Join("internal", "processor", "image", "data", "Metacritic.png")
 
 	return config
 }
