@@ -125,7 +125,7 @@ func (c *TMDBClient) parseTMDBResponse(resp *http.Response) (*tmdb.Response, err
 		return nil, err
 	case http.StatusNotFound:
 		err := errors.New(model.NotFound)
-		c.logger.Error(
+		c.logger.Debug(
 			"cannot find the resource, please check the query",
 			zap.Error(err),
 		)

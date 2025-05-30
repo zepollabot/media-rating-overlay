@@ -28,16 +28,22 @@ func (s *TMDBRatingPlatformService) GetRating(ctx context.Context, item model.It
 	)
 	results, err := s.searchService.GetResults(ctx, item)
 	if err != nil {
-		s.logger.Error("unable to get TMDB results",
-			zap.String("Item ID", item.ID),
-			zap.Error(err),
-		)
+		if err.Error() != model.NotFound {
+			s.logger.Error("unable to get TMDB results",
+				zap.String("Item ID", item.ID),
+				zap.String("Item Title", item.Title),
+				zap.String("Item Original Title", item.OriginalTitle),
+				zap.Error(err),
+			)
+		}
 		return model.Rating{}, err
 	}
 
 	if len(results) == 0 {
 		s.logger.Debug("no results found",
 			zap.String("Item ID", item.ID),
+			zap.String("Item Title", item.Title),
+			zap.String("Item Original Title", item.OriginalTitle),
 		)
 		return model.Rating{}, nil
 	} else {
