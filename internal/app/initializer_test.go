@@ -41,6 +41,10 @@ func (s *ServiceInitializerSuite) SetupTest() {
 			Enabled: true,
 			ApiKey:  "dummy-tmdb-apikey",
 		},
+		Metacritic: configmodel.Metacritic{
+			Enabled: true,
+			APIKey:  "dummy-metacritic-apikey",
+		},
 		Performance: configmodel.Performance{
 			LibraryProcessingTimeout: 10,
 		},
@@ -101,7 +105,7 @@ func (s *ServiceInitializerSuite) TestInitializeServices_Success() {
 	assert.Equal(s.T(), mediaModel.MediaServicePlex, s.initializer.GetMediaServices()[0].Name)
 
 	assert.NotNil(s.T(), s.initializer.GetRatingPlatformServices())
-	assert.Len(s.T(), s.initializer.GetRatingPlatformServices(), 3)
+	assert.Len(s.T(), s.initializer.GetRatingPlatformServices(), 4)
 
 	ratingServicesNames := make([]string, 0, len(s.initializer.GetRatingPlatformServices()))
 	for _, rs := range s.initializer.GetRatingPlatformServices() {
@@ -139,7 +143,7 @@ func (s *ServiceInitializerSuite) TestGetRatingPlatformServices_AfterInitializat
 	s.Require().NoError(err)
 	services := s.initializer.GetRatingPlatformServices()
 	assert.NotEmpty(s.T(), services)
-	assert.Len(s.T(), services, 3)
+	assert.Len(s.T(), services, 4)
 }
 
 func (s *ServiceInitializerSuite) TestGetLibraryProcessor_BeforeInitialization() {
@@ -178,7 +182,7 @@ func (s *ServiceInitializerSuite) TestInitializeServices_PlexDisabled() {
 
 	// Rating services and processors should still be initialized
 	assert.NotNil(s.T(), s.initializer.GetRatingPlatformServices())
-	assert.Len(s.T(), s.initializer.GetRatingPlatformServices(), 3)
+	assert.Len(s.T(), s.initializer.GetRatingPlatformServices(), 4)
 	assert.NotNil(s.T(), s.initializer.GetLibraryProcessor())
 	assert.NotNil(s.T(), s.initializer.GetItemProcessor())
 }

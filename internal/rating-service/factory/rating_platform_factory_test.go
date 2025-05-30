@@ -26,7 +26,11 @@ func (s *RatingServiceBaseFactorySuite) SetupTest() {
 	s.config = &configModel.Config{
 		TMDB: configModel.TMDB{
 			Enabled: false,        // Default to disabled, enable in specific tests
-			ApiKey:  "testapikey", // Corrected: ApiKey (capital K)
+			ApiKey:  "testapikey", //
+		},
+		Metacritic: configModel.Metacritic{
+			Enabled: false,        // Default to disabled, enable in specific tests
+			APIKey:  "testapikey", //
 		},
 		HTTPClient: configModel.HTTPClient{},
 		Logger:     configModel.Logger{LogFilePath: "test.log"}, // Add a dummy log path
@@ -123,4 +127,50 @@ func (s *RatingServiceBaseFactorySuite) TestBuildIMDBComponents() {
 	s.NoError(err, "BuildIMDBComponents should not return an error")
 	s.Equal(constant.RatingServiceIMDB, imdbService.Name, "Service name should be IMDB")
 	s.Nil(imdbService.PlatformService, "PlatformService should be nil for IMDB")
+}
+
+func (s *RatingServiceBaseFactorySuite) TestBuildMetacriticComponents_WhenDisabled() {
+	// Arrange
+	s.config.Metacritic.Enabled = false
+	f := s.baseFactory // Use the factory initialized in SetupTest
+
+	// Act
+	metacriticService, err := f.BuildMetacriticComponents()
+
+	// Assert
+	s.NoError(err, "BuildMetacriticComponents should not return an error")
+	s.Equal(constant.RatingServiceMetacritic, metacriticService.Name, "Service name should be Metacritic")
+	s.Nil(metacriticService.PlatformService, "PlatformService should be nil for Metacritic")
+}
+
+func (s *RatingServiceBaseFactorySuite) TestBuildMetacriticComponents_WhenEnabled() {
+	// Arrange
+	s.config.Metacritic.Enabled = true
+	// s.config.Metacritic.ApiKey is already "testapikey" from SetupTest, which is valid for this path
+	factoryInstance := factory.NewRatingServiceBaseFactory(s.logger, s.config)
+
+	// Act
+	metacriticService, err := factoryInstance.BuildMetacriticComponents()
+
+	// Assert
+	s.NoError(err, "BuildMetacriticComponents should not return an error")
+	s.Equal(constant.RatingServiceMetacritic, metacriticService.Name, "Service name should be Metacritic")
+	s.NotNil(metacriticService.PlatformService, "PlatformService should not be nil for Metacritic")
+}
+
+func (s *RatingServiceBaseFactorySuite) TestBuildMetacriticComponents_WhenEnabled_ClientCreationError() {
+	// Arrange
+	s.config.Metacritic.Enabled = true
+	// s.config.Metacritic.APIKey can remain as "testapikey", it's not the cause of client creation error
+	s.config.Logger.LogFilePath = "" // Induce an error in common.SetupLogging by providing an empty LogFilePath
+	factoryInstance := factory.NewRatingServiceBaseFactory(s.logger, s.config)
+
+	// Act
+	metacriticService, err := factoryInstance.BuildMetacriticComponents()
+
+	// Assert
+	s.Error(err, "BuildMetacriticComponents should return an error when Metacritic client creation fails due to logging setup")
+	s.Equal(ratingModel.RatingService{}, metacriticService, "Returned service should be empty on client creation error")
+	s.Empty(metacriticService.Name, "Service name should be empty on error")
+	s.Nil(metacriticService.PlatformService, "PlatformService should be nil on error")
 }
